@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <title>📅 여행 일정 플래너</title>
+  <style>
+    * { box-sizing: border-box; }
+
+    body {
+      font-family: 'Noto Sans KR', sans-serif;
+      margin: 0;
+      background: url('일본여행.png') no-repeat center center fixed;
+      background-size: cover;
+      backdrop-filter: blur(4px);
+      color: #333;
+      padding: 40px 20px;
+    }
+
+    .container {
+      max-width: 900px;
+      margin: 0 auto;
+      background: rgba(255, 255, 255, 0.9);
+      padding: 40px;
+      border-radius: 15px;
+      box-shadow: 0 0 20px rgba(0,0,0,0.2);
+    }
+
+    h1 {
+      text-align: center;
+      font-size: 2.5rem;
+      color: #222;
+      margin-bottom: 30px;
+    }
+
+    .controls {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+
+    select, input[type="time"], input[type="text"] {
+      padding: 10px;
+      font-size: 1rem;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+    }
+
+    button {
+      padding: 10px 20px;
+      background-color: #3498db;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      font-weight: bold;
+    }
+
+    button:hover {
+      background-color: #2980b9;
+    }
+
+    ul {
+      list-style: none;
+      padding: 0;
+      margin-top: 20px;
+    }
+
+    li {
+      padding: 10px 15px;
+      background: #ecf0f1;
+      margin-bottom: 10px;
+      border-radius: 6px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      cursor: grab;
+    }
+
+    .delete {
+      background: #e74c3c;
+      border: none;
+      padding: 5px 10px;
+      color: white;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+
+    .back-btn {
+      display: block;
+      text-align: center;
+      margin-top: 40px;
+      font-size: 1rem;
+      color: #2c3e50;
+      text-decoration: underline;
+      font-weight: bold;
+    }
+
+    .back-btn:hover {
+      color: #e67e22;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>📅 나만의 여행 일정 플래너</h1>
+
+    <div class="controls">
+      <select id="citySelect">
+        <option value="">도시 선택</option>
+        <option value="도쿄">🗼 도쿄</option>
+        <option value="오사카">🎡 오사카</option>
+        <option value="후쿠오카">⛩️ 후쿠오카</option>
+        <option value="삿포로">⛄ 삿포로</option>
+      </select>
+
+      <input type="time" id="timeInput">
+      <input type="text" id="planInput" placeholder="일정을 입력하세요">
+      <button onclick="addPlan()">추가</button>
+    </div>
+
+    <ul id="planList"></ul>
+    <a href="일본여행.html" class="back-btn">← 메인 페이지로</a>
+  </div>
+
+  <script>
+    const planList = document.getElementById('planList');
+
+    function addPlan() {
+      const time = document.getElementById('timeInput').value;
+      const plan = document.getElementById('planInput').value;
+      const city = document.getElementById('citySelect').value;
+
+      if (!plan || !time || !city) return;
+
+      const li = document.createElement('li');
+      li.setAttribute('draggable', true);
+      li.innerHTML = `<span>[${city} | ${time}] ${plan}</span> <button class="delete" onclick="this.parentElement.remove()">삭제</button>`;
+      planList.appendChild(li);
+
+      document.getElementById('planInput').value = '';
+      document.getElementById('timeInput').value = '';
+      document.getElementById('citySelect').selectedIndex = 0;
+    }
+
+    // Drag & Drop 순서 변경
+    let draggedItem;
+
+    planList.addEventListener('dragstart', function(e) {
+      draggedItem = e.target;
+    });
+
+    planList.addEventListener('dragover', function(e) {
+      e.preventDefault();
+      const afterElement = getDragAfterElement(planList, e.clientY);
+      const draggable = draggedItem;
+      if (afterElement == null) {
+        planList.appendChild(draggable);
+      } else {
+        planList.insertBefore(draggable, afterElement);
+      }
+    });
+
+    function getDragAfterElement(container, y) {
+      const draggableElements = [...container.querySelectorAll('li:not(.dragging)')];
+
+      return draggableElements.reduce((closest, child) => {
+        const box = child.getBoundingClientRect();
+        const offset = y - box.top - box.height / 2;
+        if (offset < 0 && offset > closest.offset) {
+          return { offset: offset, element: child };
+        } else {
+          return closest;
+        }
+      }, { offset: Number.NEGATIVE_INFINITY }).element;
+    }
+  </script>
+</body>
+</html>
